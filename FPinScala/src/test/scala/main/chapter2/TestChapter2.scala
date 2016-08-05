@@ -32,5 +32,37 @@ class TestChapter2 extends Test {
 
       isSorted(Array("aa", "a", "aaa"), cmpStrLen) shouldBe false
    }
+
+   val sum = (a: Int, b: Int) => a + b
+   "curry" should "curry functions" in {
+      val curriedSum = Chapter2.curry(sum)
+      val add2 = curriedSum(2)
+
+      add2(3) shouldBe 5
+      add2(-3) shouldBe -1
+   }
+
+   "uncurry" should "uncurry functions" in {
+      val curriedSum = Chapter2.curry(sum)
+
+      val uncuried = Chapter2.uncurry(curriedSum)
+
+      uncuried(2, 3) shouldBe 5
+
+   }
+
+   "compose" should "compose functions" in {
+      val plus1 = (a: Int) => a + 1
+      val square = (a: Int) => a * a
+
+      val squareAdd1 =  Chapter2.compose(plus1, square)
+
+      squareAdd1(2) shouldBe 5
+      (plus1 compose square)(2) shouldBe 5
+      val add1Squared =  Chapter2.compose(square, plus1)
+
+      add1Squared(2) shouldBe 9
+      (square compose plus1)(2) shouldBe 9
+   }
 }
 
