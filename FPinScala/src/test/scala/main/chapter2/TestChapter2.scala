@@ -64,5 +64,9 @@ class TestChapter2 extends Test {
       add1Squared(2) shouldBe 9
       (square compose plus1)(2) shouldBe 9
    }
+
+   "test" should "test" in {
+
+   }
 }
 
