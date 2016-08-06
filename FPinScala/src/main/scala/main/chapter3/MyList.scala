@@ -22,6 +22,11 @@ object MyList {
     case Cons(a, as) => a + sum(as)
   }
 
+  def foldRight[A, B](l: MyList[A], z: B)(f: (A,B) => B): B = l match {
+    case Nili => z
+    case Cons(h, t) => f(h, foldRight(t, z)(f))
+  }
+
   def fill[A](n: Int, a: A): MyList[A] = {
     if (n <= 0) Nili
     else Cons(a, fill(n - 1, a))
@@ -46,6 +51,21 @@ object MyList {
     } else l
   }
 
+  def dropWhile[A](l: MyList[A])(f: A => Boolean): MyList[A] = l match {
+    case Nili => Nili
+    case Cons(h, t) => if (f(h)) dropWhile(t)(f) else Cons(h, t)
+  }
 
+  def init[A](l : MyList[A]): MyList[A] = l match {
+    case Cons(h, Nili) => Nili
+    case Cons(h, t) => Cons(h, init(t))
+  }
+
+  def length[A](l: MyList[A]): Int = foldRight(l, 0)((a, b) => b + 1)
+
+  def foldLeft[A, B](l: MyList[A], z: B)(f: (B, A) => B): B = l match {
+    case Nili => z
+    case Cons(h, t) => foldLeft(t, f(z, h))(f)
+  }
 
 }

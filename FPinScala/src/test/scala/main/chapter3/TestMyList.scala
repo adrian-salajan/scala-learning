@@ -1,7 +1,7 @@
 package main.chapter3
 
 import main.Test
-import main.chapter3.MyList.{drop, fill, tail}
+import main.chapter3.MyList._
 import main.chapter3.{Cons, MyList, Nili}
 
 class TestMyList extends Test {
@@ -52,4 +52,41 @@ class TestMyList extends Test {
       drop(1, Nili)
     }
   }
+
+  "dropWhile" should "drop elements till false" in {
+    dropWhile(MyList("a", "ab", "abc", "b", "bc"))(s => s.startsWith("a")) shouldBe MyList("b", "bc")
+  }
+
+  "init" should "drop last element" in {
+    init(MyList(1, 2, 3)) shouldBe MyList(1, 2)
+    init(MyList(1)) shouldBe Nili
+    init(Nili) shouldBe Nili
+  }
+
+  "foldRight" should "foldRight" in {
+    val l = MyList(1, 2, 3)
+    foldRight(l, 0)(_ + _) shouldBe 6
+    foldRight(l, Nili:MyList[Int])(Cons(_, _)) shouldBe l
+  }
+
+  it should "throw stack overflow exception" in {
+    var l = MyList(1)
+    (1 to 1000000).foreach { n => l = Cons(1, l)}
+    a [StackOverflowError] should be thrownBy {
+      foldRight(l, 0)(_ + _)
+    }
+  }
+
+  "length" should "compute length" in {
+    MyList.length(MyList(1, 2, 3)) shouldBe 3
+    MyList.length(MyList(1)) shouldBe 1
+    MyList.length(MyList()) shouldBe 0
+  }
+
+  "foldLeft" should "sum without stack overflow" in {
+    var l = MyList(1)
+    (1 to 1000000).foreach { n => l = Cons(1, l)}
+    MyList.foldLeft(l, 0)(_ + _) shouldBe 1000001
+  }
 }
+
