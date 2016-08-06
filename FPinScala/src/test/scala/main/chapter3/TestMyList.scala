@@ -88,5 +88,32 @@ class TestMyList extends Test {
     (1 to 1000000).foreach { n => l = Cons(1, l)}
     MyList.foldLeft(l, 0)(_ + _) shouldBe 1000001
   }
+
+  "sum2" should "sum" in {
+    sum2(MyList(1, 2, 4)) shouldBe 7
+    sum2(MyList()) shouldBe 0
+  }
+
+  "product2" should "multiply" in {
+    product2(MyList(2, 2, 3)) shouldBe 12
+    product2(MyList()) shouldBe 1
+  }
+
+  var theList = MyList(2, 3, 4)
+
+  "length2" should "return length" in {
+    length2(theList) shouldBe 3
+    length2(Nili) shouldBe 0
+  }
+
+  "reverse" should "reverse list" in {
+    reverse(theList) shouldBe MyList(4, 3, 2)
+  }
+
+  "foldLeft2" should "foldLeft2" in {
+    MyList.foldLeft(theList, 0)(_ - _) shouldBe -9
+  }
+
+
 }
 

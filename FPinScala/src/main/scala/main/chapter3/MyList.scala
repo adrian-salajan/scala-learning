@@ -57,6 +57,7 @@ object MyList {
   }
 
   def init[A](l : MyList[A]): MyList[A] = l match {
+    case Nili => Nili
     case Cons(h, Nili) => Nili
     case Cons(h, t) => Cons(h, init(t))
   }
@@ -67,5 +68,13 @@ object MyList {
     case Nili => z
     case Cons(h, t) => foldLeft(t, f(z, h))(f)
   }
+
+  def sum2(l: MyList[Int]) = foldLeft(l, 0)(_ + _)
+  def product2(l: MyList[Int]) = foldLeft(l, 1)(_ * _)
+  def length2[A](l: MyList[A]): Int = foldLeft(l, 0)((a, b) => a + 1)
+
+  def reverse[A](l: MyList[A]): MyList[A] = foldLeft(l, Nili: MyList[A])((a, b) => Cons(b, a))
+
+  def foldLeft2[A, B](l: MyList[A], z: B)(f: (B, A) => B) = foldRight(l, z)((b, a) => f(a, b))
 
 }
