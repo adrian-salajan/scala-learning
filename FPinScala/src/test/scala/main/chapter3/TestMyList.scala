@@ -67,6 +67,8 @@ class TestMyList extends Test {
     val l = MyList(1, 2, 3)
     foldRight(l, 0)(_ + _) shouldBe 6
     foldRight(l, Nili:MyList[Int])(Cons(_, _)) shouldBe l
+
+    foldRight(MyList(2, 3, 4), 0)(_ - _) shouldBe 3
   }
 
   it should "throw stack overflow exception" in {
@@ -81,6 +83,10 @@ class TestMyList extends Test {
     MyList.length(MyList(1, 2, 3)) shouldBe 3
     MyList.length(MyList(1)) shouldBe 1
     MyList.length(MyList()) shouldBe 0
+  }
+
+  "foldLeft" should "foldLeft" in {
+    foldLeft(MyList(2, 3, 4), 0)(_ - _) shouldBe -9
   }
 
   "foldLeft" should "sum without stack overflow" in {
@@ -110,10 +116,21 @@ class TestMyList extends Test {
     reverse(theList) shouldBe MyList(4, 3, 2)
   }
 
-  "foldLeft2" should "foldLeft2" in {
-    MyList.foldLeft(theList, 0)(_ - _) shouldBe -9
+  "foldLeftViaFoldRight" should "foldLeftViaFoldRight" in {
+    foldLeftViaFoldRight(theList, 0)(_ - _) shouldBe -9
   }
 
+  "foldRightViaFoldLeft" should "foldRightViaFoldLeft" in {
+    foldRightViaFoldLeft(theList, 0)(_ - _) shouldBe 3
+  }
 
+  "append" should "add element at end" in {
+    append(4, MyList(1, 2, 3)) shouldBe MyList(1, 2, 3, 4)
+    append("a", MyList()) shouldBe MyList("a")
+  }
+
+  "flatten" should "flatten" in {
+    flatten(MyList(MyList(1, 2), MyList(3, 4), MyList(5, 6))) shouldBe MyList(1, 2, 3, 4, 5, 6)
+  }
 }
 

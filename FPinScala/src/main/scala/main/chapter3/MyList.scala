@@ -75,6 +75,24 @@ object MyList {
 
   def reverse[A](l: MyList[A]): MyList[A] = foldLeft(l, Nili: MyList[A])((a, b) => Cons(b, a))
 
-  def foldLeft2[A, B](l: MyList[A], z: B)(f: (B, A) => B) = foldRight(l, z)((b, a) => f(a, b))
+  def foldLeftViaFoldRight[A, B](l: MyList[A], z: B)(f: (B, A) => B) =
+    foldRight(l, z)((b, a) => f(a, b))
+
+  def foldRightViaFoldLeft[A, B](l: MyList[A], z: B)(f: (A, B) => B) =
+    foldLeft(l, z)((a, b) => f(b, a))
+
+   /**
+     * append at end
+     */
+  def append[A](a: A, as: MyList[A]) = foldRight(as, MyList(a))((x, y) => Cons(x, y))
+
+  def flatten[A](as: MyList[MyList[A]]): MyList[A] =
+//    reverse(
+//  foldLeft(as, Nili: MyList[A])((acc, list) => foldLeft(list, acc)((acc2, y) => Cons(y, acc2))
+//    )
+    foldLeft(as, Nili: MyList[A])((acc, list) => foldLeft(list, acc)((acc2, y) => append(y, acc2))
+    )
+
+
 
 }
