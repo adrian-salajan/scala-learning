@@ -132,5 +132,35 @@ class TestMyList extends Test {
   "flatten" should "flatten" in {
     flatten(MyList(MyList(1, 2), MyList(3, 4), MyList(5, 6))) shouldBe MyList(1, 2, 3, 4, 5, 6)
   }
+
+  "incrementAllBy1" should "add 1 to all" in {
+    incrementAllBy1(MyList(-1, 2, 0)) shouldBe MyList(0, 3, 1)
+  }
+
+  "doublesToStrings" should "convert doubles to strings" in {
+    doublesToStrings(MyList(2d, 3.0d, 4.01d)) shouldBe MyList("2.0", "3.0", "4.01")
+  }
+
+  "filter" should "remove elements that dont match predicate" in {
+    filter(MyList(2, 3, 4, 5))(_ % 2 == 0) shouldBe MyList(2, 4)
+  }
+
+  "map" should "transform each element" in {
+    map(MyList(1, 2, 3))(_.toString) shouldBe MyList("1", "2", "3")
+  }
+
+  "concat" should "concat 2 lists" in {
+    concat(MyList(1, 2), MyList(3, 4)) shouldBe MyList(1, 2, 3, 4)
+    concat(Nili, MyList(3, 4)) shouldBe MyList(3, 4)
+    concat(MyList(1, 2), Nili) shouldBe MyList(1, 2)
+  }
+
+  def duplicate[A](a: A) = MyList(a, a)
+
+  "flatMap" should "flat map" in {
+    flatMap(MyList(1, 2, 3))(duplicate) shouldBe MyList(1, 1, 2, 2, 3, 3)
+    flatMap(MyList())(duplicate) shouldBe MyList()
+  }
 }
+
 
