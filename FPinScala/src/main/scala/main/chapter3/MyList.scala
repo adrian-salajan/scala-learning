@@ -123,17 +123,56 @@ object MyList {
   //    as match {
   //    case Nili => Nili
   //    case Cons(h, t) => if (f(h)) Cons(h, filter(t)(f)) else filter(t)(f)
-//  }
-      foldRight(as, Nili: MyList[A])((a, z) => if (f(a)) Cons(a, z) else z)
+  //  }
+    foldRight(as, Nili: MyList[A])((a, z) => if (f(a)) Cons(a, z) else z)
 
   def concat[A](as: MyList[A], bs: MyList[A]): MyList[A] =
   //foldLeft(reverse(as), bs)((z, a) => Cons(a, z))
-  foldRight(as, bs)((a, z) => Cons(a, z))
+    foldRight(as, bs)((a, z) => Cons(a, z))
 
-  def flatMap[A, B](as: MyList[A])(f: A => MyList[B]): MyList[B] = as match {
+  def flatMap[A, B](as: MyList[A])(f: A => MyList[B]): MyList[B] =
+  /* as match {
     case Nili => Nili
     case Cons(h, t) => concat(f(h), flatMap(t)(f))
 
+  }*/
+    flatten(map(as)(f))
+
+  def filterWithFlatMap[A](as: MyList[A])(p: A => Boolean) =
+    flatMap(as)((a: A) => if (p(a)) MyList(a) else Nili)
+
+  def addLists(as: MyList[Int], bs: MyList[Int]): MyList[Int] = as match {
+    case Nili => Nili
+    case Cons(h, t) => bs match {
+      case Nili => Nili
+      case Cons(hh, tt) => Cons(h + hh, addLists(t, tt))
+    }
+  }
+
+  def addLists2(as: MyList[Int], bs: MyList[Int]): MyList[Int] = (as, bs) match {
+    case (Cons(h, t), Cons(hh, tt)) => Cons(h + hh, addLists2(t, tt))
+    case (Nili, _) => Nili
+    case (_, Nili) => Nili
+  }
+
+  def zipWith[A, B, C](as: MyList[A], bs: MyList[B])(f: (A, B) => C): MyList[C] = (as, bs) match {
+    case (Cons(h, t), Cons(hh, tt)) => Cons(f(h, hh), zipWith(t, tt)(f))
+    case (Nili, _) => Nili
+    case (_, Nili) => Nili
+  }
+
+
+
+
+  def hasSubsequence[A](sup: MyList[A], sub: MyList[A]): Boolean = {
+    def hasSubsequence[A](sup: MyList[A], sub: MyList[A], originalSub: MyList[A]): Boolean =
+      (sup, sub) match {
+        case (Cons(h, t), Cons(hh, tt)) => if (h == hh) hasSubsequence(t, tt, originalSub) else hasSubsequence(t, originalSub, originalSub)
+        case (Cons(h, t), Nili) => true
+        case (Nili, Nili) => true
+        case (Nili, _) => false
+      }
+    hasSubsequence(sup, sub, sub)
   }
 
 

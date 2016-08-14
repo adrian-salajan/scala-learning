@@ -161,6 +161,31 @@ class TestMyList extends Test {
     flatMap(MyList(1, 2, 3))(duplicate) shouldBe MyList(1, 1, 2, 2, 3, 3)
     flatMap(MyList())(duplicate) shouldBe MyList()
   }
+
+  "addLists" should "add lists" in {
+    addLists(MyList(1, 2, 3), MyList(4, 5, 6)) shouldBe MyList(5, 7, 9)
+
+    addLists2(MyList(1, 2, 3), MyList(4, 5, 6)) shouldBe MyList(5, 7, 9)
+  }
+
+  "zipWith" should "zip with f" in {
+    zipWith(MyList(1, 2, 3), MyList(4, 5, 6))(_ + _) shouldBe MyList(5, 7, 9)
+  }
+
+  "hasSubsequence" should "return true for valid subsequence" in {
+    hasSubsequence(MyList(1, 2, 3, 4), MyList(1, 2)) shouldBe true
+    hasSubsequence(MyList(1, 2, 3, 4), MyList(2, 3)) shouldBe true
+    hasSubsequence(MyList(1, 2, 3, 4), MyList(3, 4)) shouldBe true
+    hasSubsequence(MyList(1, 2, 3, 4), MyList(1)) shouldBe true
+    hasSubsequence(MyList(1, 2, 3, 4), MyList(2)) shouldBe true
+    hasSubsequence(MyList(1, 2, 3, 4), MyList(4)) shouldBe true
+    hasSubsequence(MyList(1, 2, 3, 4), MyList(1, 2, 3, 4)) shouldBe true
+
+    hasSubsequence(MyList(1, 2, 3, 4), MyList(1, 3)) shouldBe false
+    hasSubsequence(MyList(1, 2, 3, 4), MyList(4, 5)) shouldBe false
+    hasSubsequence(MyList(1, 2, 3, 4), MyList(7)) shouldBe false
+    hasSubsequence(MyList(1, 2, 3, 4), MyList(1, 2, 3, 4, 5)) shouldBe false
+  }
 }
 
 
