@@ -1,5 +1,7 @@
 package main.chapter5
 
+import java.util.Optional
+
 sealed trait Stream[+A] {
 
    def toList: List[A] = this match {
@@ -18,7 +20,7 @@ sealed trait Stream[+A] {
       case _ => this
    }
 
-   def takeWhile(p: A => Boolean) :Stream[A] = this match {
+   def takeWhile(p: A => Boolean): Stream[A] = this match {
       case Cons(h, t) if p(h()) => Stream.cons(h(), t().takeWhile(p))
       case _ => Empty
    }
@@ -28,28 +30,70 @@ sealed trait Stream[+A] {
       case _ => true
    }
 
-   def foldRight[B](z: B)(f: (A, => B) => B ) : B = this match {
+   def foldRight[B](z: B)(f: (A, => B) => B): B = this match {
       case Cons(h, t) => f(h(), t().foldRight(z)(f))
       case _ => z
    }
 
-   def takeWhileFR(p: A => Boolean) :Stream[A] = foldRight(Empty: Stream[A])(
+   def takeWhileFR(p: A => Boolean): Stream[A] = foldRight(Empty: Stream[A])(
       (e, z) =>
          if (p(e)) Cons(() => e, () => z)
          else Empty
    )
 
-   def headOptionFR: Option[A] = foldRight(None :Option[A])((e, z) => Option(e))
+   def headOptionFR: Option[A] = foldRight(None: Option[A])((e, z) => Option(e))
 
-   def map[B](f: A => B) = foldRight(Empty :Stream[B])((e, z) => Cons(() => f(e), () => z))
+   def map[B](f: A => B) = foldRight(Empty: Stream[B])((e, z) => Cons(() => f(e), () => z))
 
    def filter(p: A => Boolean) = foldRight(Empty: Stream[A])((e, z) => if (p(e)) Cons(() => e, () => z) else z)
 
-   def append[B>:A](s: => Stream[B]): Stream[B] = foldRight(s)((e, z) => Cons(() => e, () => z))
+   def append[B >: A](s: => Stream[B]): Stream[B] = foldRight(s)((e, z) => Cons(() => e, () => z))
 
-   def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(Empty :Stream[B])(
+   def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(Empty: Stream[B])(
       (e, z) => f(e).append(z)
    )
+
+   def mapUnfold[B](f: A => B): Stream[B] = Stream.unfold(this) {
+      case Cons(h, t) => Option((f(h()), t()))
+      case _ => Option.empty
+   }
+
+   def takeUnfold(n: Int) = Stream.unfold((n, this)) {
+      case (n, Cons(h, t)) if n > 0 => Option(h(), (n - 1, t()))
+      case _ => None
+   }
+
+   def takeWhileUnfold(p: A => Boolean) = Stream.unfold(this) {
+      case Cons(h, t) if p(h()) => Option(h(), t())
+      case _ => None
+   }
+
+   def zipWithUnfold[B, C](s: Stream[B])(f: (A, B) => C): Stream[C] = Stream.unfold((this, s)) {
+      case (Cons(h, t), Cons(hh, tt)) => Option(f(h(), hh()), (t(), tt()))
+      case _ => None
+   }
+
+   def zipAllUnfold[B](s: Stream[B]): Stream[(Option[A], Option[B])] = Stream.unfold((this, s)) {
+      case (Cons(h, t), Cons(hh, tt)) => Option((Option(h()), Option(hh())), (t(), tt()))
+      case (Empty, Cons(hh, tt)) => Option((None, Option(hh())), (Empty, tt()))
+      case (Cons(h, t), Empty) => Option((Option(h()), None), (t(), Empty))
+      case _ => None
+   }
+
+
+   def startsWith[A](seq: Stream[A]): Boolean = Stream.unfold((seq, this)) {
+         case (Cons(h, t), Cons(hh, tt)) => if (h() == hh()) Option(true, (t(), tt())) else Option(false, (t(), tt()))
+         case _ => None
+      }.forAll(r => r)
+
+
+//   def hasSubsequence[A](seq: Stream[A]): Boolean = {
+//      this.fi
+//      def hasSubImpl(s: Stream[A], seq: Stream[A]) = {
+//         s.
+//      }
+//   }
+
 
 }
 
@@ -87,6 +131,13 @@ object Stream {
    }
 
    def fibsUnfold: Stream[Int] = unfold((0, 1))(s => Option(s._1, (s._2, s._1 + s._2)))
+
+   def fromUnfold(n: Int) :Stream[Int] = unfold(n)(s => Option(s, s + 1))
+
+   def constantUnfold[A](a :A) :Stream[A] = unfold(a)(a => Option(a, a))
+
+   def ones:Stream[Int] = unfold(1)(_ => Option(1, 1))
+
 
 
 }

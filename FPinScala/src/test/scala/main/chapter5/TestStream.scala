@@ -75,10 +75,12 @@ class TestStream extends Test {
 
    "constant" should "work" in {
       Stream.constant(3).take(4).toList shouldBe List(3, 3, 3, 3)
+      Stream.constantUnfold(3).take(4).toList shouldBe List(3, 3, 3, 3)
    }
 
    "from" should "work" in {
       Stream.from(3).take(3).toList shouldBe List(3, 4, 5)
+      Stream.fromUnfold(3).take(3).toList shouldBe List(3, 4, 5)
    }
 
    "fibs" should "work" in {
@@ -90,6 +92,51 @@ class TestStream extends Test {
       Stream.unfold(1)(s => Option((s, s + 1))).take(4).toList shouldBe List(1, 2, 3, 4)
    }
 
+   "ones" should "work" in {
+      Stream.ones.take(3).toList shouldBe List(1, 1, 1)
+   }
+
+   "mapUnfold" should "work" in {
+      Stream(1, 2, 3).mapUnfold(_ + 1).toList shouldBe List(2, 3, 4)
+      Stream.empty[Int].mapUnfold(_ + 1).toList shouldBe Nil
+   }
+
+   "takeUnfold" should "work" in {
+      Stream(1, 2, 3, 4).takeUnfold(2).toList shouldBe List(1, 2)
+      Stream(1, 2, 3, 4).takeUnfold(4).toList shouldBe List(1, 2, 3, 4)
+      Stream(1, 2, 3, 4).takeUnfold(5).toList shouldBe List(1, 2, 3, 4)
+      Stream(1, 2, 3, 4).takeUnfold(0).toList shouldBe Nil
+   }
+
+   "takeWhileUnfold" should "work" in {
+      Stream(1, 2, 3, 4, 5, 1, 1, 1).takeWhileUnfold( _ <= 3).toList shouldBe List(1, 2, 3)
+      Stream(1, 2).takeWhileUnfold(_ <= 4).toList shouldBe List(1, 2)
+      Stream(1, 2, 3).takeWhileUnfold((a) => true).toList shouldBe List(1, 2, 3)
+      Stream(1, 2, 3).takeWhileUnfold((a) => false).toList shouldBe Nil
+   }
+
+   "zipWithUnfold" should "work" in {
+      val add = (a: Int, b: Int) => a + b
+      Stream(1, 2, 3).zipWithUnfold(Stream(7, 8, 9))(add).toList shouldBe List(8, 10, 12)
+      Stream(1, 2, 3).zipWithUnfold(Stream(7))(add).toList shouldBe List(8)
+      Stream(1).zipWithUnfold(Stream(7, 8, 9))(add).toList shouldBe List(8)
+      Stream().zipWithUnfold(Stream(7, 8, 9))(add).toList shouldBe Nil
+      Stream(1, 2, 3).zipWithUnfold(Stream())(add).toList shouldBe Nil
+   }
+
+
+   "zipAllUnfold" should "work" in {
+      Stream(1, 2).zipAllUnfold(Stream(7, 8)).toList shouldBe List((Some(1), Some(7)), (Some(2), Some(8)))
+      Stream(1, 2).zipAllUnfold(Stream(7)).toList shouldBe List((Some(1), Some(7)), (Some(2), None))
+      Stream(1).zipAllUnfold(Stream(7, 8)).toList shouldBe List((Some(1), Some(7)), (None, Some(8)))
+      Stream().zipAllUnfold(Stream(7, 8)).toList shouldBe List((None, Some(7)), (None, Some(8)))
+      Stream(1, 2).zipAllUnfold(Stream()).toList shouldBe List((Some(1), None), (Some(2), None))
+   }
+
+   "startsWith" should "work" in {
+      Stream(1, 2, 3, 4).startsWith(Stream(1, 2)) shouldBe true
+      Stream(1, 2, 3, 4).startsWith(Stream(2, 3)) shouldBe false
+   }
 
 
 }
