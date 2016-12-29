@@ -136,6 +136,8 @@ class TestStream extends Test {
    "startsWith" should "work" in {
       Stream(1, 2, 3, 4).startsWith(Stream(1, 2)) shouldBe true
       Stream(1, 2, 3, 4).startsWith(Stream(2, 3)) shouldBe false
+      Stream(1, 2).startsWith(Stream(1, 2, 3)) shouldBe false
+      Stream(1, 2).startsWith(Stream(1, 2)) shouldBe true
    }
 
 

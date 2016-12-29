@@ -82,12 +82,14 @@ sealed trait Stream[+A] {
 
 
    def startsWith[A](seq: Stream[A]): Boolean = Stream.unfold((seq, this)) {
-         case (Cons(h, t), Cons(hh, tt)) => if (h() == hh()) Option(true, (t(), tt())) else Option(false, (t(), tt()))
-         case _ => None
-      }.forAll(r => r)
+      case (Cons(h, t), Cons(hh, tt)) => if (h() == hh()) Option(true, (t(), tt())) else Option(false, (t(), tt()))
+      case (Cons(h, t), Empty) => Option(false, (t(), Stream.empty))
+      case _ => None
+   }.forAll(r => r)
 
 
-//   def hasSubsequence[A](seq: Stream[A]): Boolean = {
+
+   //   def hasSubsequence[A](seq: Stream[A]): Boolean = {
 //      this.fi
 //      def hasSubImpl(s: Stream[A], seq: Stream[A]) = {
 //         s.
