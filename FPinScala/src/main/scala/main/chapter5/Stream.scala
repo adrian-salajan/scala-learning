@@ -88,14 +88,18 @@ sealed trait Stream[+A] {
    }.forAll(r => r)
 
 
+   def tails: Stream[Stream[A]] = Stream.unfold(this) {
+      case c: Cons[A] => Option(c, c.drop(1))
+      case _ => None
+   }.append(Stream(Empty))
 
-   //   def hasSubsequence[A](seq: Stream[A]): Boolean = {
-//      this.fi
-//      def hasSubImpl(s: Stream[A], seq: Stream[A]) = {
-//         s.
-//      }
-//   }
+   def hasSubsequence[A](seq: Stream[A]): Boolean = {
+      this.tails.foldRight(false)((s, r) => s.startsWith(seq) || r)
+//    !this.tails.map(_.startsWith(seq)).forAll(r => !r)
+   }
 
+   def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
+      this.tails.map(_.foldRight(z)(f))
 
 }
 

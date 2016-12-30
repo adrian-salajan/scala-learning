@@ -140,5 +140,21 @@ class TestStream extends Test {
       Stream(1, 2).startsWith(Stream(1, 2)) shouldBe true
    }
 
+   "tails" should "work" in {
+      Stream(1, 2, 3).tails   .map(_.toList).toList shouldBe List(List(1, 2, 3), List(2, 3), List(3), Nil)
+   }
+
+   "hasSubsequence" should "work" in {
+      val seq = Stream(2, 3, 4)
+      Stream(1, 2, 3, 4, 5).hasSubsequence(seq) shouldBe true
+      Stream(2, 3, 4).hasSubsequence(seq) shouldBe true
+      Stream(2, 3).hasSubsequence(seq) shouldBe false
+      Stream(1, 2, 3, 3, 4, 5).hasSubsequence(seq) shouldBe false
+   }
+
+   "scanRight" should "work" in {
+      Stream(1, 2, 3).scanRight(0)(_ + _).toList shouldBe List(6, 5, 3, 0)
+   }
+
 
 }
