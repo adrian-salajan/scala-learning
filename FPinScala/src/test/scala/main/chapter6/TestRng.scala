@@ -53,6 +53,8 @@ class TestRng extends Test{
       RNG.sequence(List(RNG.int, RNG.doubleMap))(r)._1 shouldBe List(RNG.int(r)_1, RNG.doubleMap(RNG.int(r)_2)_1)
 
       RNG.sequenceFold(List(RNG.int, RNG.doubleMap))(r)._1 shouldBe List(RNG.int(r)_1, RNG.doubleMap(RNG.int(r)_2)_1)
+
+      RNG.sequenceTR(List(RNG.int, RNG.doubleMap))(r)._1 shouldBe List(RNG.int(r)_1, RNG.doubleMap(RNG.int(r)_2)_1)
    }
 
    "intsSequence" should "generate list of random ints" in {
