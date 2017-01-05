@@ -23,6 +23,18 @@ case class State[S,+A](run: S => (A,S))
       f(a).run(state1)
    })
 
+   def get[S]: State[S, S] = State(s => (s, s))
+
+   def set[S](newState: S) :State[S, Unit] = State(_ => ((), newState))
+
+
+//   def modify[S](f: S => S): Unit = for {
+//      s <- get
+//      _ <- set(f(s))
+//   } ()
+
+   def modify2[S](f: S => S): Unit = get.flatMap( (cs: S) => set(f(cs)))
+
 }
 
 //unit, map, map2, flatMap, and sequence.
