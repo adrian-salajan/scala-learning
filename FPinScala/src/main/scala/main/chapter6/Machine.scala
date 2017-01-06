@@ -1,4 +1,5 @@
 package main.chapter6
+import State._
 
 case class Machine(locked: Boolean, coins: Int, candies: Int)
 
@@ -14,32 +15,29 @@ object Simulator {
 
 
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
-
-    val init: State[Machine, (Int, Int)] = State(m => ((m.coins, m.candies), m))
-
     val LOCKED = true
     val UNLOCKED = false
 
-    inputs.foldLeft(init)((m, i) => {
-      i match {
-        case Coin =>
-          m.get.flatMap(s => s match {
-            case Machine(LOCKED, co, ca) =>
-              if (ca > 0) m.set(Machine(UNLOCKED, co + 1, ca - 1))
-              else m
-            case Machine(UNLOCKED, co, ca) => m
-            case Machine(_, co, 0) => m
-          })
-        case Turn =>
-          m.get.flatMap(s => s match {
-            case Machine(UNLOCKED, co, ca) => m.set(Machine(LOCKED, co, ca))
-            case Machine(LOCKED, co, ca) => m
-            case Machine(_, co, 0) => m
-          })
-      }
-    })
+    val states =
+      inputs.map(
+        in => modify[Machine](
+          m => (in, m) match {
+            case (Coin, Machine(LOCKED, a, b)) => if (b >0) Machine(UNLOCKED, a + 1, b - 1) else m
+            case (Coin, Machine(UNLOCKED, a, b)) => m
+            case (Turn, Machine(UNLOCKED, a, b)) => Machine(LOCKED, a, b)
+            case (Turn, Machine(LOCKED, a, b)) => m
+            case (_, Machine(_, _, 0)) => m
+          }
+        )
+      )
+
+    for {
+      r <- get
+      _ <- sequence(states)
+    } yield (r.coins, r.candies)
 
   }
+
 
 
 }

@@ -23,17 +23,9 @@ case class State[S,+A](run: S => (A,S))
       f(a).run(state1)
    })
 
-   def get[S]: State[S, S] = State(s => (s, s))
-
-   def set[S](newState: S) :State[S, Unit] = State(_ => ((), newState))
 
 
-//   def modify[S](f: S => S): Unit = for {
-//      s <- get
-//      _ <- set(f(s))
-//   } ()
 
-   def modify2[S](f: S => S): Unit = get.flatMap( (cs: S) => set(f(cs)))
 
 }
 
@@ -45,4 +37,17 @@ object State {
       val z = State.unit[S, List[A]](List[A]())
       states.reverse.foldLeft(z)((acc, nextState) => nextState.map2(acc)((i, ac) => i :: ac))
    }
+
+   def get[S]: State[S, S] = State(s => (s, s))
+
+   def set[S](newState: S) :State[S, Unit] = State(_ => ((), newState))
+
+   def modify[S](f: S => S): State[S, Unit] = for {
+      s <- get
+      _ <- set(f(s))
+   } yield ()
+
+
+
+   def modify2[S](f: S => S): State[S, Unit] = get.flatMap( (cs: S) => set(f(cs)))
 }
