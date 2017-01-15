@@ -15,6 +15,40 @@ class TestStream extends Test {
       Stream.empty.take(3) shouldBe Stream.empty
    }
 
+   "Stream elements built with Cons()" should "be evaluates only once" in {
+      var counter = 0
+
+      val stream = Stream.cons[Int](
+         {counter = counter + 1; println("1"); 1},
+         Stream.cons[Int](
+               {counter = counter + 1; println("2"); 2},
+               Empty)
+         )
+
+      stream.toList shouldBe List(1, 2)
+      stream.toList shouldBe List(1, 2)
+      stream.toList shouldBe List(1, 2)
+
+      counter shouldBe 2
+   }
+
+   "Stream elements build with Cons()" should "be evaluated each time" in {
+      var counter = 0
+
+      val stream = Cons[Int](
+         () => {counter = counter + 1; println("1"); 1},
+         () => Cons[Int](
+            () => {counter = counter + 1; println("2"); 2},
+            () => Empty)
+      )
+
+      stream.toList shouldBe List(1, 2)
+      stream.toList shouldBe List(1, 2)
+      stream.toList shouldBe List(1, 2)
+
+      counter shouldBe 6
+   }
+
    "drop" should "work" in {
       Stream.apply(1, 2, 3, 4, 5).drop(3).toList shouldBe List(4, 5)
       Stream.apply(1, 2).drop(3) shouldBe Stream.empty
@@ -158,3 +192,4 @@ class TestStream extends Test {
 
 
 }
+

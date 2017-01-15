@@ -1,6 +1,5 @@
 package main.chapter5
 
-import java.util.Optional
 
 sealed trait Stream[+A] {
 
@@ -12,7 +11,7 @@ sealed trait Stream[+A] {
    def take(n: Int): Stream[A] = this match {
       case Empty => Stream.empty
       case Cons(h, t) if n == 0 => Stream.empty
-      case Cons(h, t) => Cons(() => h(), () => t().take(n - 1))
+      case Cons(h, t) => Stream.cons(h(), t().take(n - 1))
    }
 
    def drop(n: Int): Stream[A] = this match {
@@ -37,17 +36,19 @@ sealed trait Stream[+A] {
 
    def takeWhileFR(p: A => Boolean): Stream[A] = foldRight(Empty: Stream[A])(
       (e, z) =>
-         if (p(e)) Cons(() => e, () => z)
+         //if (p(e)) Cons(() => e, () => z)
+         if (p(e)) Stream.cons(e, z)
          else Empty
    )
 
    def headOptionFR: Option[A] = foldRight(None: Option[A])((e, z) => Option(e))
 
-   def map[B](f: A => B) = foldRight(Empty: Stream[B])((e, z) => Cons(() => f(e), () => z))
+   def map[B](f: A => B) = foldRight(Empty: Stream[B])((e, z) => Stream.cons(f(e),z))
+   def map2[B](f: A => B) = foldRight(Empty: Stream[B])((e, z) => Cons(() => f(e),() => z))
 
-   def filter(p: A => Boolean) = foldRight(Empty: Stream[A])((e, z) => if (p(e)) Cons(() => e, () => z) else z)
+   def filter(p: A => Boolean) = foldRight(Empty: Stream[A])((e, z) => if (p(e))  Stream.cons(e, z) else z)
 
-   def append[B >: A](s: => Stream[B]): Stream[B] = foldRight(s)((e, z) => Cons(() => e, () => z))
+   def append[B >: A](s: => Stream[B]): Stream[B] = foldRight(s)((e, z) => Stream.cons(e, z))
 
    def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(Empty: Stream[B])(
       (e, z) => f(e).append(z)
@@ -120,12 +121,12 @@ object Stream {
    def apply[A](as: A*): Stream[A] =
       if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
 
-   def constant[A](a: A): Stream[A] = Cons(() => a, () => constant(a))
+   def constant[A](a: A): Stream[A] = cons(a, constant(a))
 
-   def from(n: Int): Stream[Int] = Cons(() => n, () => from(n + 1))
+   def from(n: Int): Stream[Int] = cons(n, from(n + 1))
 
    def fibs: Stream[Int] = {
-      def fib(a: Int, b:Int) :Stream[Int] = Cons(() => a , () => fib(b, a + b))
+      def fib(a: Int, b:Int) :Stream[Int] = cons(a , fib(b, a + b))
       fib(0, 1)
    }
 
