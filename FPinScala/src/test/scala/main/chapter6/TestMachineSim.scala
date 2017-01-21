@@ -1,8 +1,11 @@
 package main.chapter6
 
 import main.Test
+import org.scalatest.Ignore
 
+@Ignore
 class TestMachineSim extends Test {
+
 
   "machine sim" should "work" in {
 

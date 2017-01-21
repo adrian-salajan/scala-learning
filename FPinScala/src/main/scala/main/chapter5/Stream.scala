@@ -48,6 +48,8 @@ sealed trait Stream[+A] {
 
    def filter(p: A => Boolean) = foldRight(Empty: Stream[A])((e, z) => if (p(e))  Stream.cons(e, z) else z)
 
+   def find(p: A => Boolean) :Option[A] = filter(p).headOptionFR
+
    def append[B >: A](s: => Stream[B]): Stream[B] = foldRight(s)((e, z) => Stream.cons(e, z))
 
    def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(Empty: Stream[B])(
@@ -69,12 +71,12 @@ sealed trait Stream[+A] {
       case _ => None
    }
 
-   def zipWithUnfold[B, C](s: Stream[B])(f: (A, B) => C): Stream[C] = Stream.unfold((this, s)) {
+   def zip[B, C](s: Stream[B])(f: (A, B) => C): Stream[C] = Stream.unfold((this, s)) {
       case (Cons(h, t), Cons(hh, tt)) => Option(f(h(), hh()), (t(), tt()))
       case _ => None
    }
 
-   def zipAllUnfold[B](s: Stream[B]): Stream[(Option[A], Option[B])] = Stream.unfold((this, s)) {
+   def zipAll[B](s: Stream[B]): Stream[(Option[A], Option[B])] = Stream.unfold((this, s)) {
       case (Cons(h, t), Cons(hh, tt)) => Option((Option(h()), Option(hh())), (t(), tt()))
       case (Empty, Cons(hh, tt)) => Option((None, Option(hh())), (Empty, tt()))
       case (Cons(h, t), Empty) => Option((Option(h()), None), (t(), Empty))

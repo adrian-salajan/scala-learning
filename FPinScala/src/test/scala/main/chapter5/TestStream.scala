@@ -151,20 +151,20 @@ class TestStream extends Test {
 
    "zipWithUnfold" should "work" in {
       val add = (a: Int, b: Int) => a + b
-      Stream(1, 2, 3).zipWithUnfold(Stream(7, 8, 9))(add).toList shouldBe List(8, 10, 12)
-      Stream(1, 2, 3).zipWithUnfold(Stream(7))(add).toList shouldBe List(8)
-      Stream(1).zipWithUnfold(Stream(7, 8, 9))(add).toList shouldBe List(8)
-      Stream().zipWithUnfold(Stream(7, 8, 9))(add).toList shouldBe Nil
-      Stream(1, 2, 3).zipWithUnfold(Stream())(add).toList shouldBe Nil
+      Stream(1, 2, 3).zip(Stream(7, 8, 9))(add).toList shouldBe List(8, 10, 12)
+      Stream(1, 2, 3).zip(Stream(7))(add).toList shouldBe List(8)
+      Stream(1).zip(Stream(7, 8, 9))(add).toList shouldBe List(8)
+      Stream().zip(Stream(7, 8, 9))(add).toList shouldBe Nil
+      Stream(1, 2, 3).zip(Stream())(add).toList shouldBe Nil
    }
 
 
    "zipAllUnfold" should "work" in {
-      Stream(1, 2).zipAllUnfold(Stream(7, 8)).toList shouldBe List((Some(1), Some(7)), (Some(2), Some(8)))
-      Stream(1, 2).zipAllUnfold(Stream(7)).toList shouldBe List((Some(1), Some(7)), (Some(2), None))
-      Stream(1).zipAllUnfold(Stream(7, 8)).toList shouldBe List((Some(1), Some(7)), (None, Some(8)))
-      Stream().zipAllUnfold(Stream(7, 8)).toList shouldBe List((None, Some(7)), (None, Some(8)))
-      Stream(1, 2).zipAllUnfold(Stream()).toList shouldBe List((Some(1), None), (Some(2), None))
+      Stream(1, 2).zipAll(Stream(7, 8)).toList shouldBe List((Some(1), Some(7)), (Some(2), Some(8)))
+      Stream(1, 2).zipAll(Stream(7)).toList shouldBe List((Some(1), Some(7)), (Some(2), None))
+      Stream(1).zipAll(Stream(7, 8)).toList shouldBe List((Some(1), Some(7)), (None, Some(8)))
+      Stream().zipAll(Stream(7, 8)).toList shouldBe List((None, Some(7)), (None, Some(8)))
+      Stream(1, 2).zipAll(Stream()).toList shouldBe List((Some(1), None), (Some(2), None))
    }
 
    "startsWith" should "work" in {
