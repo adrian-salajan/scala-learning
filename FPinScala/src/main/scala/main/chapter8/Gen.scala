@@ -11,6 +11,8 @@ case class Gen[A](sample: State[RNG, A]) {
 
    def unsized: SGen[A] = SGen(_ => this)
 
+   def map[B](f: A => B): Gen[B] = Gen(sample.map(f(_)))
+
 }
 case class SGen[A](forSize: Int => Gen[A]) {
 
