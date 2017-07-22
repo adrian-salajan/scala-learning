@@ -7,11 +7,21 @@ case class Gen[A](sample: State[RNG, A]) {
 
    def flatMap[B](f: A => Gen[B]): Gen[B] = Gen(sample.flatMap(a => f(a).sample))
 
+   def map[B](f: A => B): Gen[B] = Gen(sample.map(f))
+
+   def map2[B, C](g: Gen[B])(f: (A, B) => C): Gen[C] = //flatMap(x => g.map(y => f(x,y)))
+      for {
+         x <- this
+         y <- g
+      } yield f(x,y)
+
    def listOfN(size: Gen[Int]): Gen[List[A]] = size.flatMap(n => Gen(State.sequence(List.fill(n)(sample))))
 
    def unsized: SGen[A] = SGen(_ => this)
 
-   def map[B](f: A => B): Gen[B] = Gen(sample.map(f(_)))
+   def listOf(n: Int) = Gen.listOfN(n, this)
+
+   def **[B](g: Gen[B]): Gen[(A,B)] = (this map2 g)((_,_))
 
 }
 case class SGen[A](forSize: Int => Gen[A]) {
@@ -44,6 +54,10 @@ object Gen {
       val weight = w1 / (w1 + w2)
       dg.flatMap(d => if (d < weight) g1._1 else g2._1)
    }
+
+   def listOf[A](g: Gen[A]): SGen[List[A]] = SGen(n => g.listOf(n))
+
+   def listOf1[A](g: Gen[A]): SGen[List[A]] = SGen(n => g.listOf(1 max n))
 
 
 

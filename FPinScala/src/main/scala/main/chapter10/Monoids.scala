@@ -11,6 +11,9 @@
   * ***********************************************************************/
 package main.chapter10
 
+import main.chapter7.Par
+import main.chapter7.Par.Par
+import main.chapter7.Par.Par
 import main.chapter8.{Gen, Prop}
 
 trait Monoid[A] {
@@ -61,12 +64,68 @@ object Monoids {
   }
 
   def monoidLaws2[A](m: Monoid[A], gen: Gen[A]): Prop = {
-    val identity1 = Prop.forAll(gen)(a => m.op(m.zero, a) == a).tag("id1")
-    val identity2 = Prop.forAll(gen)(a => m.op(a, m.zero) == a).tag("id2")
+    val identity1 = Prop.forAll(gen)(a => m.op(m.zero, a) == a).tag(" id1 ")
+    val identity2 = Prop.forAll(gen)(a => m.op(a, m.zero) == a).tag(" id2 ")
 
     val assoc = Prop.forAll(gen.flatMap(a => gen.flatMap(b => gen.map(c => (a, b, c)))))((p: ((A, A, A))) =>
-      m.op(p._1, m.op(p._2, p._3)) == m.op(m.op(p._1, p._2), p._3)).tag("assoc")
+      m.op(p._1, m.op(p._2, p._3)) == m.op(m.op(p._1, p._2), p._3)).tag(" assoc ")
 
     identity1 && identity2 && assoc
+  }
+
+  def foldMap[A,B](as: List[A], m: Monoid[B])(f: A => B): B = {
+    as.foldLeft(m.zero)((b, a) => m.op(b, f(a)))
+  }
+  def foldLeft[A](as: List[A])(z: A)(f: (A, A) => A): A = {
+    val mon = new Monoid[A] {
+      override def zero: A = z
+      override def op(a: A, b: A): A = f(a, b)
+    }
+    foldMap(as, mon)(identity)
+  }
+
+  def foldMapV[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): B = {
+
+    if (v.size == 1) f(v(0))
+    else {
+      val (a, b) = v.splitAt(v.size / 2)
+      m.op(
+        foldMapV(a, m)(f),
+        foldMapV(b, m)(f)
+      )
+    }
+  }
+
+
+  def par[A](m: Monoid[A]): Monoid[Par[A]] = new Monoid[Par[A]] {
+
+    override def op(a: Par[A], b: Par[A]): Par[A] = Par.map2(a, b)(m.op)
+
+    override def zero: Par[A] = Par.unit(m.zero)
+  }
+
+  def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = {
+    if (v.size == 1) Par.unit(f(v(0)))
+    else {
+      val (a, b) = v.splitAt(v.size / 2)
+      par(m).op(
+        parFoldMap(a, m)(f),
+        parFoldMap(b, m)(f)
+      )
+    }
+  }
+
+  def isOrderedInt = new Monoid[(Int, Boolean)] {
+
+    override def zero: (Int, Boolean) = (Integer.MIN_VALUE, true)
+
+    override def op(a: (Int, Boolean), b: (Int, Boolean)): (Int, Boolean) = {
+      val (aa, za) = a
+      val (bb, zb) = b
+
+      if (aa < bb)      (bb, za && zb)
+      else if (aa > bb) (aa, false)
+      else              (aa, za && zb)
+    }
   }
 }

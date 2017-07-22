@@ -112,6 +112,9 @@ object Par {
 
    def selectFM[A](a: Par[Par[A]]):Par[A] =
       flatMap(a)(id => id)
+
+   def equal[A](p: Par[A], p2: Par[A]): Par[Boolean] =
+      Par.map2(p,p2)(_ == _)
 }
 
 

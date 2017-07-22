@@ -1,9 +1,12 @@
 package main.chapter8
 
+import java.util.concurrent.{Executors, ExecutorService}
+
 import main.Test
 import main.chapter6.{SimpleRNG, RNG}
-import main.chapter8.Gen.{unit, union, choose}
-import main.chapter8.Prop.{Falsified, forAll, Passed}
+import main.chapter7.Par
+import main.chapter8.Gen._
+import main.chapter8.Prop._
 
 class TestGen extends Test{
 
@@ -50,22 +53,88 @@ class TestGen extends Test{
 
    "prop &&" should "work" in {
       val b = Gen.boolean
-      (forAll(b)(_ == true) && forAll(b)(_ == true)).run(1, new DummyRng(List(2, 3, 4))) shouldBe Passed
+      (forAll(b)(_ == true) && forAll(b)(_ == true)).run(1, 1, new DummyRng(List(2, 3, 4))) shouldBe Passed
 
-      (forAll(b)(_ == true) && forAll(b)(_ == true)).run(2, new DummyRng(List(2, 3, 4))) shouldBe Falsified("false", 1)
+      (forAll(b)(_ == true) && forAll(b)(_ == true)).run(1, 2, new DummyRng(List(2, 3, 4))) shouldBe Falsified("false", 1)
 
-      (forAll(b)(_ == true).tag("L") && forAll(b)(_ == true).tag("R")).run(3, new DummyRng(List(2, 4, 3, 3))) shouldBe Falsified("Lfalse", 2)
+      (forAll(b)(_ == true).tag("L") && forAll(b)(_ == true).tag("R")).run(1, 3, new DummyRng(List(2, 4, 3, 3))) shouldBe Falsified("Lfalse", 2)
 
    }
 
    "prop ||" should "work" in {
       val b = Gen.boolean
-      (forAll(b)(_ == false) || forAll(b)(_ == true)).run(1, new DummyRng(List(2, 2, 2, 2))) shouldBe Passed
+      (forAll(b)(_ == false) || forAll(b)(_ == true)).run(1, 1, new DummyRng(List(2, 2, 2, 2))) shouldBe Passed
 
-      (forAll(b)(_ == true) || forAll(b)(_ == false)).run(2, new DummyRng(List(2, 2, 2, 2))) shouldBe Passed
+      (forAll(b)(_ == true) || forAll(b)(_ == false)).run(1, 2, new DummyRng(List(2, 2, 2, 2))) shouldBe Passed
 
-      (forAll(b)(_ == false).tag("L") || forAll(b)(_ == false)).tag("R").run(3, new DummyRng(List(3, 7, 2, 2))) shouldBe Falsified("Rtrue", 2)
+      (forAll(b)(_ == false).tag("L") || forAll(b)(_ == false)).tag("R").run(1, 3, new DummyRng(List(3, 7, 2, 2))) shouldBe Falsified("Rtrue", 2)
 
+   }
+
+   "max on list" should "work" in {
+      val smallInt = Gen.choose(-10,10)
+      val maxProp = Prop.forAll(listOf1(smallInt)) { li =>
+         val max = li.max
+         !li.exists(_ > max)
+      }
+
+      Prop.run(maxProp) shouldBe Passed
+   }
+
+   "sorted list" should "work" in {
+      val smallInt = Gen.choose(-10,10)
+      val maxProp = Prop.forAll(listOf1(smallInt)) { li =>
+         val sorted = li.sorted
+
+         sorted.zip(sorted.tail).forall((t) => t._1 <= t._2)
+      }
+
+      Prop.run(maxProp) shouldBe Passed
+   }
+
+   "Par: law of mapping" should "work" in {
+      val ES: ExecutorService = Executors.newCachedThreadPool
+
+      val p1 = Prop.forAll(
+         Gen.unit(Par.unit(1)))(i =>
+            Par.map(i)(_ + 1)(ES).get == Par.unit(2)(ES).get)
+
+      Prop.run(p1) shouldBe Passed
+   }
+
+   "Par: law of mapping2" should "work" in {
+      val ES: ExecutorService = Executors.newCachedThreadPool
+
+      val p1 = Prop.check {
+         Par.map(Par.unit(1))(_ + 1)(ES) == Par.unit(2)(ES)
+      }
+
+      Prop.run(p1) shouldBe Proved
+   }
+
+   "Par: law of mapping3" should "work" in {
+      val ES: ExecutorService = Executors.newCachedThreadPool
+
+      val p3 = check {
+         Par.equal(
+            Par.map(Par.unit(1))(_ + 1),
+            Par.unit(2)
+         )(ES).get
+      }
+
+      Prop.run(p3) shouldBe Proved
+   }
+
+   "Par: law of mapping4" should "work" in {
+
+      val p3 = checkPar {
+         Par.equal(
+            Par.map(Par.unit(1))(_ + 1),
+            Par.unit(2)
+         )
+      }
+
+      Prop.run(p3) shouldBe Passed
    }
 
    class DummyRng(r: List[Int]) extends RNG {
