@@ -118,4 +118,14 @@ class TestMonoids extends Test {
     val (_, x) = Monoids.foldMap(randomL, Monoids.isOrderedInt)(transform)
     x shouldBe false
   }
+
+  "countWords monoid" should "work" in {
+    val s = "ana are mere"
+    Monoids.countWords(s)
+  }
+
+  "mapViaFoldMap" should "work" in {
+    val as = List(1, 2, 3)
+    Monoids.mapViaFoldMap(as)(_ * 2) shouldBe List(2, 4, 6)
+  }
 }

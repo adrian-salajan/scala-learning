@@ -55,6 +55,13 @@ object Monoids {
     override def op(a: (A) => A, b: (A) => A): (A) => A = a compose b
   }
 
+  def dual[A](m: Monoid[A]): Monoid[A] = new Monoid[A] {
+
+    override def op(a: A, b: A): A = m.op(b, a)
+
+    override def zero: A = m.zero
+  }
+
   def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop = {
     val identity1 = Prop.forAll(gen)(a => m.op(m.zero, a) == a).tag("id1")
     val identity2 = Prop.forAll(gen)(a => m.op(a, m.zero) == a).tag("id2")
@@ -76,6 +83,7 @@ object Monoids {
   def foldMap[A,B](as: List[A], m: Monoid[B])(f: A => B): B = {
     as.foldLeft(m.zero)((b, a) => m.op(b, f(a)))
   }
+
   def foldLeft[A](as: List[A])(z: A)(f: (A, A) => A): A = {
     val mon = new Monoid[A] {
       override def zero: A = z
@@ -83,6 +91,7 @@ object Monoids {
     }
     foldMap(as, mon)(identity)
   }
+
 
   def foldMapV[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): B = {
 
@@ -115,6 +124,7 @@ object Monoids {
     }
   }
 
+  //does not respect monoid laws
   def isOrderedInt = new Monoid[(Int, Boolean)] {
 
     override def zero: (Int, Boolean) = (Integer.MIN_VALUE, true)
@@ -128,4 +138,43 @@ object Monoids {
       else              (aa, za && zb)
     }
   }
-}
+
+  sealed trait WC
+  case class Stub(chars: String) extends WC
+  case class Part(lStub: String, words: Int, rStub: String) extends WC
+
+  val wcMonoid: Monoid[WC] = new Monoid[WC] {
+
+    override def zero: WC = Stub("")
+
+    override def op(a: WC, b: WC): WC = {
+      (a, b) match {
+        case (Stub(x), Stub(y)) => Stub(x + y)
+        case (Part(q, w, e), Stub(c)) => Part(q, w, e + c)
+        case (Stub(c), Part(q, w, e)) => Part(c + q, w, e)
+        case (Part(q, w, e), Part(z, x, c)) => Part(q, w + x + (if ((e + z).isEmpty) 0 else 1), c)
+      }
+    }
+  }
+
+  def countWords(s: String): Int = {
+      def wc(c: Char): WC = {
+        if (c.isWhitespace) Part("", 0, "")
+        else Stub(c.toString)
+      }
+
+    foldMapV(s, wcMonoid)(wc)
+
+    -1
+  }
+
+  def listConcatMonoid[A] = new Monoid[List[A]] {
+    override def zero: List[A] = List()
+
+    override def op(a: List[A], b: List[A]): List[A] = a ::: b
+  }
+
+  def mapViaFoldMap[A, B](as: List[A])(f: A => B) : List[B] = foldMap(as, listConcatMonoid[B])(a => List(f(a)))
+
+
+} //obj monoids
