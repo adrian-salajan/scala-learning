@@ -1,18 +1,6 @@
-/** ***********************************************************************
-  * ULLINK CONFIDENTIAL INFORMATION
-  * _______________________________
-  *
-  * All Rights Reserved.
-  *
-  * NOTICE: This file and its content are the property of Ullink. The
-  * information included has been classified as Confidential and may
-  * not be copied, modified, distributed, or otherwise disseminated, in
-  * whole or part, without the express written permission of Ullink.
-  * ***********************************************************************/
 package main.chapter10
 
 import main.chapter7.Par
-import main.chapter7.Par.Par
 import main.chapter7.Par.Par
 import main.chapter8.{Gen, Prop}
 
@@ -94,8 +82,8 @@ object Monoids {
 
 
   def foldMapV[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): B = {
-
-    if (v.size == 1) f(v(0))
+    if (v.isEmpty) m.zero
+    else if (v.size == 1) f(v(0))
     else {
       val (a, b) = v.splitAt(v.size / 2)
       m.op(
@@ -104,7 +92,6 @@ object Monoids {
       )
     }
   }
-
 
   def par[A](m: Monoid[A]): Monoid[Par[A]] = new Monoid[Par[A]] {
 

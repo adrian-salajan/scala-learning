@@ -1,15 +1,9 @@
-/** ***********************************************************************
-  * ULLINK CONFIDENTIAL INFORMATION
-  * _______________________________
-  *
-  * All Rights Reserved.
-  *
-  * NOTICE: This file and its content are the property of Ullink. The
-  * information included has been classified as Confidential and may
-  * not be copied, modified, distributed, or otherwise disseminated, in
-  * whole or part, without the express written permission of Ullink.
-  * ***********************************************************************/
 package main.chapter10
+
+import main.chapter3.Tree
+
+import scala.annotation.tailrec
+import scala.collection.immutable.Stream.{Empty, cons}
 
 trait Foldable[F[_]] {
 
@@ -25,24 +19,59 @@ object Foldables {
 
   val forList = new Foldable[List] {
 
-//    override def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B = {
-//      if (as.isEmpty) z
-//      else foldLeft(as.tail)(f(z, as.head))(f)
-//    }
-
     override def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B = foldMap(as)((a: A) => (b: B) => f(b,a))(Monoids.dual(Monoids.endoMonoid[B]))(z)
 
     override def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B = foldMap(as)(f.curried)(Monoids.endoMonoid[B])(z)
 
 
-    override def foldMap[A, B](as: List[A])(f: (A) => B)(m: Monoid[B]): B = ???
+    override def foldMap[A, B](as: List[A])(f: (A) => B)(m: Monoid[B]): B = {
+      @tailrec
+      def foldMap[X, Y](b: Y, as: List[X])(f: (X) => Y)(m: Monoid[Y]): Y = {
+        as match {
+          case Nil => b
+          case h :: tail => foldMap(m.op(b, f(h)), tail)(f)(m)
+        }
+      }
+      foldMap(m.zero, as)(f)(m)
+    }
+
+  }
+  val forSeq = new Foldable[IndexedSeq] {
+
+    override def foldLeft[A, B](as: IndexedSeq[A])(z: B)(f: (B, A) => B): B = foldMap(as)((a: A) => (b: B) => f(b,a))(Monoids.dual(Monoids.endoMonoid[B]))(z)
+
+    override def foldRight[A, B](as: IndexedSeq[A])(z: B)(f: (A, B) => B): B = foldMap(as)(f.curried)(Monoids.endoMonoid[B])(z)
+
+    override def foldMap[A, B](as: IndexedSeq[A])(f: (A) => B)(m: Monoid[B]): B = {
+      Monoids.foldMapV(as, m)(f)
+    }
   }
 
-  val forSeq = new Foldable[IndexedSeq] {
-    override def foldLeft[A, B](as: IndexedSeq[A])(z: B)(f: (B, A) => B): B = forList.foldLeft(as.toList)(z)(f)
+  val forStream = new Foldable[Stream] {
 
-    override def foldRight[A, B](as: IndexedSeq[A])(z: B)(f: (A, B) => B): B = forList.foldRight(as.toList)(z)(f)
+    override def foldLeft[A, B](as: Stream[A])(z: B)(f: (B, A) => B): B = foldMap(as)((a: A) => (b: B) => f(b,a))(Monoids.dual(Monoids.endoMonoid[B]))(z)
 
-    override def foldMap[A, B](as: IndexedSeq[A])(f: (A) => B)(m: Monoid[B]): B = forList.foldMap(as.toList)(f)(m)
+    override def foldRight[A, B](as: Stream[A])(z: B)(f: (A, B) => B): B = foldMap(as)(f.curried)(Monoids.endoMonoid[B])(z)
+
+    override def foldMap[A, B](as: Stream[A])(f: (A) => B)(m: Monoid[B]): B = {
+      @tailrec
+      def foldMap[A, B](b: B, as: Stream[A])(f: (A) => B)(m: Monoid[B]): B = {
+        as match {
+          case Empty => b
+          case cons(h, tail) => foldMap(m.op(b, f(h)), tail)(f)(m)
+        }
+      }
+      foldMap(m.zero, as)(f)(m)
+    }
+  }
+
+  val forTree = new Foldable[Tree] {
+    override def foldLeft[A, B](as: Tree[A])(z: B)(f: (B, A) => B): B = foldMap(as)((a: A) => (b: B) => f(b,a))(Monoids.dual(Monoids.endoMonoid[B]))(z)
+
+    override def foldRight[A, B](as: Tree[A])(z: B)(f: (A, B) => B): B = foldMap(as)(f.curried)(Monoids.endoMonoid[B])(z)
+
+    override def foldMap[A, B](as: Tree[A])(f: (A) => B)(m: Monoid[B]): B = {
+      Tree.fold(as)(f)(m.op)
+    }
   }
 }

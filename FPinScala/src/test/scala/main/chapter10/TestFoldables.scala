@@ -1,22 +1,13 @@
-/** ***********************************************************************
-  * ULLINK CONFIDENTIAL INFORMATION
-  * _______________________________
-  *
-  * All Rights Reserved.
-  *
-  * NOTICE: This file and its content are the property of Ullink. The
-  * information included has been classified as Confidential and may
-  * not be copied, modified, distributed, or otherwise disseminated, in
-  * whole or part, without the express written permission of Ullink.
-  * ***********************************************************************/
 package main.chapter10
 
 import main.Test
+import main.chapter3.{Leaf, Node}
 
 class TestFoldables extends Test{
 
   val as = List("a", "b", "c")
   val seqAs = IndexedSeq("a", "b", "c")
+  val streamAs = Stream("a", "b", "c")
 
   "foldableList" should "foldLeft" in {
 
@@ -62,6 +53,47 @@ class TestFoldables extends Test{
     import Foldables.forSeq._
     val ints = IndexedSeq("1", "2", "4")
     foldMap(ints)(_.toInt)(Monoids.intAddition) shouldBe 7
+  }
+
+  "foldableStream" should "foldLeft" in {
+
+    import Foldables.forStream._
+    foldLeft(streamAs)("z")(_ + _) shouldBe "zabc"
+    foldLeft(Stream[String]())("")(_ + _) shouldBe ""
+
+    streamAs.foldLeft("")(_ + _) shouldBe "abc"
+  }
+
+  it should "foldRight" in {
+    import Foldables.forStream._
+    foldRight(streamAs)("z")(_ + _) shouldBe "abcz"
+    foldRight(Stream[String]())("")(_ + _) shouldBe ""
+
+    streamAs.foldRight("z")(_ + _) shouldBe "abcz"
+  }
+
+  it should "foldMap" in {
+    import Foldables.forStream._
+    val ints = Stream("1", "2", "4")
+    foldMap(ints)(_.toInt)(Monoids.intAddition) shouldBe 7
+  }
+
+
+  val treeAs = Node(
+        Leaf("a"), Node(
+                  Leaf("b"), Leaf("c"))
+  )
+
+  "foldableTree" should "foldLeft" in {
+
+    import Foldables.forTree._
+    foldLeft(treeAs)("z")(_ + _) shouldBe "zabc"
+  }
+
+  "foldableTree" should "foldRight" in {
+
+    import Foldables.forTree._
+    foldRight(treeAs)("z")(_ + _) shouldBe "abcz"
   }
 
 }
