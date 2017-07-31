@@ -96,4 +96,13 @@ class TestFoldables extends Test{
     foldRight(treeAs)("z")(_ + _) shouldBe "abcz"
   }
 
+  "toList" should "work for every foldable" in {
+    Foldables.forList.toList(as) shouldBe as
+    Foldables.forSeq.toList(seqAs) shouldBe as
+    Foldables.forStream.toList(streamAs) shouldBe as
+    Foldables.forTree.toList(treeAs) shouldBe as
+    Foldables.forOption.toList(Option.empty) shouldBe Nil
+    Foldables.forOption.toList(Option(3)) shouldBe List(3)
+  }
+
 }

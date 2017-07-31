@@ -13,6 +13,8 @@ trait Foldable[F[_]] {
   def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B = foldMap(as)((a: A) => (b: B) => f(b,a))(Monoids.dual(Monoids.endoMonoid[B]))(z)
   def concat[A](as: F[A])(m: Monoid[A]): A = foldLeft(as)(m.zero)(m.op)
 
+  def toList[A](fa: F[A]): List[A] = foldMap(fa)(List(_))(Monoids.listConcatMonoid)
+
 }
 
 
@@ -58,5 +60,11 @@ object Foldables {
     override def foldMap[A, B](as: Tree[A])(f: (A) => B)(m: Monoid[B]): B = {
       Tree.fold(as)(f)(m.op)
     }
+  }
+
+  val forOption = new Foldable[Option] {
+
+    override def foldMap[A, B](as: Option[A])(f: (A) => B)(m: Monoid[B]): B = as.map(f).getOrElse(m.zero)
+
   }
 }

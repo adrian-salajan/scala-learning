@@ -1,14 +1,3 @@
-/** ***********************************************************************
-  * ULLINK CONFIDENTIAL INFORMATION
-  * _______________________________
-  *
-  * All Rights Reserved.
-  *
-  * NOTICE: This file and its content are the property of Ullink. The
-  * information included has been classified as Confidential and may
-  * not be copied, modified, distributed, or otherwise disseminated, in
-  * whole or part, without the express written permission of Ullink.
-  * ***********************************************************************/
 package main.chapter10
 
 import java.util.concurrent.Executors
@@ -127,5 +116,21 @@ class TestMonoids extends Test {
   "mapViaFoldMap" should "work" in {
     val as = List(1, 2, 3)
     Monoids.mapViaFoldMap(as)(_ * 2) shouldBe List(2, 4, 6)
+  }
+
+
+  "monoid product" should "be a monoid" in {
+    val rng = new SimpleRNG(2039)
+
+    Monoids.monoidLaws2(Monoids.booleanAnd, Gen.boolean).run(10, 10, rng) shouldBe Passed
+
+
+    val intGen= Gen.choose(1, 100)
+    Monoids.monoidLaws2(Monoids.intAddition, intGen).run(10, 10, rng) shouldBe Passed
+
+    val genBoolsAndInts = Gen.boolean ** intGen
+
+    val pm = Monoids.productMonoid(Monoids.booleanAnd, Monoids.intAddition)
+    Monoids.monoidLaws2(pm, genBoolsAndInts).run(10, 10, rng) shouldBe Passed
   }
 }

@@ -163,5 +163,13 @@ object Monoids {
 
   def mapViaFoldMap[A, B](as: List[A])(f: A => B) : List[B] = foldMap(as, listConcatMonoid[B])(a => List(f(a)))
 
+  def productMonoid[A,B](m: Monoid[A], n: Monoid[B]): Monoid[(A,B)] = new Monoid[(A, B)] {
+
+    override def zero: (A, B) = (m.zero, n.zero)
+
+    override def op(a: (A, B), b: (A, B)): (A, B) = (m.op(a._1, b._1), n.op(a._2, b._2))
+
+  }
+
 
 } //obj monoids
