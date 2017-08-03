@@ -171,5 +171,31 @@ object Monoids {
 
   }
 
+  def mapMergeMonoid[K,V](V: Monoid[V]): Monoid[Map[K, V]] =
+    new Monoid[Map[K, V]] {
+
+      def zero = Map[K, V]()
+
+      def op(a: Map[K, V], b: Map[K, V]) = {
+        val ab: Set[K] = (a.keySet ++ b.keySet)
+        ab.foldLeft(zero) { (acc, k) =>
+          acc.updated(k, V.op(a.getOrElse(k, V.zero),
+            b.getOrElse(k, V.zero)))
+        }
+      }
+    }
+
+  def functionMonoid[A,B](bMon: Monoid[B]): Monoid[A => B] = new Monoid[A => B] {
+
+    override def zero: A => B = a => bMon.zero
+
+    override def op(af: A => B, bf: A => B): A => B = (aa:A) => bMon.op(af(aa), bf(aa))
+
+  }
+
+  def bag[A](as: IndexedSeq[A]): Map[A, Int] = {
+    Foldables.forSeq.foldMap(as)(e => Map(e -> 1))(mapMergeMonoid(Monoids.intAddition))
+  }
+
 
 } //obj monoids

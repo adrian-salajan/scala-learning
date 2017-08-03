@@ -133,4 +133,25 @@ class TestMonoids extends Test {
     val pm = Monoids.productMonoid(Monoids.booleanAnd, Monoids.intAddition)
     Monoids.monoidLaws2(pm, genBoolsAndInts).run(10, 10, rng) shouldBe Passed
   }
+
+  "functionMonoid" should "compose functions" in {
+    val plus2 = (a: Int) => a + 2
+    val times10 = (a: Int) => a * 100
+
+    val plusMon = Monoids.functionMonoid[Int, Int](Monoids.intAddition)
+    val newf = plusMon.op(plus2, times10)
+
+    newf(3) shouldBe 305
+
+    val multMon = Monoids.functionMonoid[Int, Int](Monoids.intMultiplication)
+    val newf2 = multMon.op(plus2, times10)
+
+    newf2(3) shouldBe 1500
+  }
+
+  "compute a bag from seq wtih monoid" should "work" in {
+    val s = Vector("a", "rose", "is", "a", "rose")
+    Monoids.bag(s) shouldBe Map("a" -> 2, "rose" -> 2, "is" -> 1)
+  }
+
 }
