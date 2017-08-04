@@ -17,7 +17,6 @@ trait Foldable[F[_]] {
 
 }
 
-
 object Foldables {
 
   val forList = new Foldable[List] {
