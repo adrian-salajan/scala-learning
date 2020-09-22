@@ -4,23 +4,37 @@ import scala.annotation.tailrec
 import scala.collection.immutable.Queue
 import scala.collection.mutable
 
-object Trie extends App {
+object ImmutableTrie extends App {
+
+
+  def apply(words: Seq[String]): Trie = {
+    Trie(construct(words, false))
+  }
+
+  def construct(words: Seq[String], hasValue: Boolean): Node = {
+    if (words.isEmpty)
+      Node(hasValue, Map.empty)
+    else {
+      val firstLetterToRemainingWords = words
+        .map(w => (w.head, w.tail))
+        .groupMap(a => a._1)(a => a._2)
+
+      Node(hasValue,
+        firstLetterToRemainingWords.map {
+          case (letter, tails) =>
+            (letter, construct(tails.filterNot(_.isEmpty), tails.exists(_.isEmpty)))
+        }
+      )
+    }
+  }
 
   case class Node(
-    var hasValue: Boolean,
-    var children: mutable.Map[Char, Node] = mutable.HashMap()
+    hasValue: Boolean,
+    children: Map[Char, Node] = Map()
   )
 
   case class Trie(root: Node) {
 
-    def add(word: String): Trie = {
-      var current = root
-      for (c <- word)
-        current = current.children
-          .getOrElseUpdate(c, Node(hasValue = false, children = mutable.HashMap()))
-      current.hasValue = true
-      this
-    }
 
     def exists(word: String): Boolean = {
       var current = Option(root)
@@ -119,14 +133,13 @@ object Trie extends App {
     }
   }
 
-  var t = Trie(Node(hasValue = false))
-  t.add("mandarin").add("man").add("map").add("mango").add("maABC")
+  var t = ImmutableTrie(List("mandarin", "map", "man", "mango", "maABC"))
 
   assert(t.exists("mango"))
   assert(t.exists("mandarin"))
+  assert(t.exists("maABC"))
   assert(t.exists("map"))
   assert(t.exists("man"))
-  assert(t.exists("maABC"))
 
   assert(!t.exists("manx"))
   assert(!t.exists("ma"))
@@ -135,14 +148,14 @@ object Trie extends App {
   println("prefixes for lol: " + t.prefixesMatchingString("lol"))
 
 
-//  println("string matching prefix man: " + t.stringsMatchingPrefix("max")) // man, mandarin, mango
+  println("string matching prefix man: " + t.stringsMatchingPrefix("man")) // man, mandarin, mango
 
   assert(!t.exists("mago"))
   println("string matching prefix ma: " + t.stringsMatchingPrefix("ma")) // man, map, mandarin, mango
 
-//  println("string matching prefix map: " + t.stringsMatchingPrefix("map")) // map
-//  println("string matching prefix mando: " + t.stringsMatchingPrefix("mando")) // ""
-//  println("string matching prefix mand: " + t.stringsMatchingPrefix("mand")) // mandarin
+  println("string matching prefix map: " + t.stringsMatchingPrefix("map")) // map
+  println("string matching prefix mando: " + t.stringsMatchingPrefix("mando")) // ""
+  println("string matching prefix mand: " + t.stringsMatchingPrefix("mand")) // mandarin
 
   println("done")
 
