@@ -9,21 +9,17 @@ object HelpGranny extends App {
   def tour(arrFriends: List[String], ftoT: List[(String, String)], h: Map[String, Double]): Int = {
     val friendsToTown = ftoT.toMap
 
-    val (lastCityVisited, dTraveled) = arrFriends.foldLeft(("homeBase", 0d)) { case ((lastLocation, dTraveled), nextFriend) =>
+    val initial = (friendsToTown(arrFriends.head), h(friendsToTown(arrFriends.head)))
+
+    val (lastCityVisited, dTraveled) = arrFriends.tail.foldLeft(initial) {
+      case ((lastLocation, dTraveled), nextFriend) =>
         friendsToTown.get(nextFriend)
           .fold(
-              (lastLocation, dTraveled)
-            ){nextLocation =>
-              if (lastLocation == "homeBase") {
-                (nextLocation, dTraveled + h(nextLocation))
-              } else {
-                (nextLocation, dTraveled + length(lastLocation, nextLocation, h))
-              }
-            }
+            (lastLocation, dTraveled)
+          )(nextLocation => (nextLocation, dTraveled + length(lastLocation, nextLocation, h)))
     }
 
     Math.floor(dTraveled + h(lastCityVisited)).toInt
-
   }
 
   def length(loc1: String, loc2: String, h:Map[String, Double]): Double = {
