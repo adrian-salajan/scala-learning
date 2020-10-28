@@ -5,7 +5,7 @@ version := "0.1"
 scalaVersion := "2.13.3"
 addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.11.0" cross CrossVersion.full)
 
-
+mainClass in (Compile, run) := Some("adrian.rockthejvm.streams.AsyncMapAsync")
 
 val catsVersion = "2.2.0"
 
@@ -34,5 +34,28 @@ libraryDependencies +=  "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion
 //libraryDependencies +=  "com.typesafe.akka" %% "akka-stream" % AkkaVersion
 
 libraryDependencies += "co.fs2" %% "fs2-core" % "2.4.4" // For cats 2 and cats-effect 2
+libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.2.3"
 
+libraryDependencies ++= Seq(
+  Cinnamon.library.cinnamonAkka,
+  Cinnamon.library.cinnamonAkkaTyped,
+  Cinnamon.library.cinnamonAkkaStream,
+//  Cinnamon.library.cinnamonAkkaHttp,
+//  Cinnamon.library.cinnamonJvmMetricsProducer,
+  Cinnamon.library.cinnamonPrometheus,
+  Cinnamon.library.cinnamonPrometheusHttpServer
+)
+
+
+
+lazy val app = project in file(".") enablePlugins (Cinnamon)
+// Add the Cinnamon Agent for run and test
+cinnamon in run := true
+cinnamon in test := true
+// Set the Cinnamon Agent log level
+cinnamonLogLevel := "INFO"
+
+
+
+//addSbtPlugin("io.kamon" % "sbt-kanela-runner" % "2.0.6")
 
