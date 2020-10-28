@@ -46,7 +46,7 @@ object AsyncMapAsync extends App {
     val future = Source(1 to 600)
       .via(
 //               Flow.apply[Int] .mapAsyncUnordered(8) { n => someActor1.ask[Reply](replyTo => Command(n, replyTo)).map(_.n) }
-        ActorFlow.ask(parallelism = 1)(someActor1)((n, replyTo: ActorRef[Reply]) => Command(n, replyTo))
+        ActorFlow.ask(parallelism = 1)(someActor1)((n: Int, replyTo: ActorRef[Reply]) => Command(n, replyTo))
         .map(_.n)
         .named("stage-1")
       )
@@ -57,7 +57,7 @@ object AsyncMapAsync extends App {
 
       .via(
 //        Flow.apply[Int].mapAsyncUnordered(8) { n => someActor2.ask[Reply](replyTo => Command(n, replyTo)).map(_.n) }
-        ActorFlow.ask(parallelism = 1)(someActor2)((n, replyTo: ActorRef[Reply]) => Command(n, replyTo))
+        ActorFlow.ask(parallelism = 1)(someActor2)((n: Int, replyTo: ActorRef[Reply]) => Command(n, replyTo))
         .map(_.n)
         .named("stage-2")
       )
